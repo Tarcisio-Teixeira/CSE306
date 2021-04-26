@@ -1,15 +1,16 @@
 #pragma once
 
 #include "vector.cpp"
+#include "geometry.cpp"
 #include "ray.cpp"
 #include <cmath>
 
-class Sphere {
+class Sphere : public Geometry{
     
     public:
         double radius;
         Vector center;
-        Vector albedo;
+        
         bool mirror;
         double refractionIndex;
         bool isLight;
@@ -24,6 +25,7 @@ class Sphere {
             this->isLight = isLight;
             this->lightIntensity = lightIntensity;
             this->speed = speed;
+            this->type = 0;
 
         }
         Sphere(){}

@@ -1,5 +1,5 @@
 #pragma once
-
+#include "geometry.cpp"
 #include "vector.cpp"
 #include "intersection.cpp"
 #include "ray.cpp"
@@ -116,30 +116,59 @@ class GetColor {
             }
             Intersection inter = intersect_scene(ray,scene);
             if (inter.intersects){
-                if (inter.sphere.isLight){
-                    if (lastBounceDiffuse) return Vector(0.,0.,0.);
-                    else return Vector(1.,1.,1.)*(inter.sphere.lightIntensity/(4*M_PI*M_PI*inter.sphere.radius*inter.sphere.radius));
-                }
-                else if (inter.sphere.mirror){
-                    return getColor(lightSphere, s, generateReflectedRay(ray, inter), rayDepth-1, scene, curRefractionIndex, false);
-                }
-                else if (inter.sphere.refractionIndex >0){
-                    double n1 = curRefractionIndex;
-                    double n2 = inter.sphere.refractionIndex;
-                    correctParamsRayDirection(inter, n2, ray);
-                    Vector n= inter.unitNormal;
-                    double k0 = (n1-n2)*(n1-n2)/((n1+n2)*(n1+n2));
-                    double dir_dot_unit = dot(ray.direction,n);
-                    double var = ( 1 - abs(dir_dot_unit) );
-                    double R = k0 + (1-k0)*var*var*var*var*var;
-                    double u = ((double) rand()/(RAND_MAX));
-                    if (u < R){
-                        return getColor(lightSphere, s, generateReflectedRay(ray, inter), rayDepth-1, scene, n1,false);
-                    } else {
-                        return getColor(lightSphere, s, generateRefractedRay(ray,inter,n1,n2), (rayDepth-1), scene, n2,false);
+                Geometry* obj_ = inter.object;
+                if (obj_->type == 0){
+                    Sphere* obj = (Sphere*) obj_;
+                    if (obj->isLight){
+                        if (lastBounceDiffuse) return Vector(0.,0.,0.);
+                        else return Vector(1.,1.,1.)*(obj->lightIntensity/(4*M_PI*M_PI*obj->radius*obj->radius));
                     }
-                } 
-                else {
+                    else if (obj->mirror){
+                        return getColor(lightSphere, s, generateReflectedRay(ray, inter), rayDepth-1, scene, curRefractionIndex, false);
+                    }
+                    else if (obj->refractionIndex >0){
+                        double n1 = curRefractionIndex;
+                        double n2 = obj->refractionIndex;
+                        correctParamsRayDirection(inter, n2, ray);
+                        Vector n= inter.unitNormal;
+                        double k0 = (n1-n2)*(n1-n2)/((n1+n2)*(n1+n2));
+                        double dir_dot_unit = dot(ray.direction,n);
+                        double var = ( 1 - abs(dir_dot_unit) );
+                        double R = k0 + (1-k0)*var*var*var*var*var;
+                        double u = ((double) rand()/(RAND_MAX));
+                        if (u < R){
+                            return getColor(lightSphere, s, generateReflectedRay(ray, inter), rayDepth-1, scene, n1,false);
+                        } else {
+                            return getColor(lightSphere, s, generateRefractedRay(ray,inter,n1,n2), (rayDepth-1), scene, n2,false);
+                        }
+                    } 
+                    else {
+                        Vector Lo(0.,0.,0.);
+                        Vector xprime = randomPointOnLightSphere(inter.point,lightSphere);
+                        Vector Nprime = normalize( xprime - lightSphere.center);
+                        Vector omega_i = normalize( xprime - inter.point );
+                        double visibility = 1 ;
+                        Vector p_ = inter.point+inter.unitNormal*0.000001;
+                        Ray testRay(p_, omega_i, ray.time);
+                        Intersection testInter = intersect_scene(testRay,scene);
+                        if (testInter.intersects){
+                            double dTest = (testInter.point-inter.point).norm();
+                            if ( (testInter.object->type==1)||(! ((Sphere*)testInter.object)->isLight) ){
+                                visibility = 0;
+                            }
+                        }
+                        double R = obj->radius;
+                        double pdf = dot ( Nprime , normalize( inter.point - lightSphere.center) ) / ( M_PI*R*R );
+                        Lo = obj->albedo*(lightSphere.lightIntensity / ( 4* M_PI*M_PI*M_PI*R*R )); 
+                        Lo = Lo* (visibility * std::max (dot(inter.unitNormal , omega_i ) , 0. ));
+                        Lo = Lo*(std::max( dot ( Nprime , omega_i*(-1) ) , 0.) / ( (xprime - inter.point).norm()*(xprime - inter.point).norm()* pdf )) ;
+                        Ray randomRay(inter.point, normalize(randomCos(inter.unitNormal)), ray.time );
+                        Lo+=obj->albedo*getColor(lightSphere,s,randomRay,rayDepth-1,scene,curRefractionIndex, true);
+                        return Lo;
+                    }
+                }
+                else if (obj_->type==1){
+                    TriangleMesh* obj = (TriangleMesh*) obj_;
                     Vector Lo(0.,0.,0.);
                     Vector xprime = randomPointOnLightSphere(inter.point,lightSphere);
                     Vector Nprime = normalize( xprime - lightSphere.center);
@@ -150,17 +179,22 @@ class GetColor {
                     Intersection testInter = intersect_scene(testRay,scene);
                     if (testInter.intersects){
                         double dTest = (testInter.point-inter.point).norm();
-                        if (!testInter.sphere.isLight){
+                        if ( (testInter.object->type==1)||(! ((Sphere*)testInter.object)->isLight) ){
                             visibility = 0;
                         }
                     }
-                    double R = inter.sphere.radius;
-                    double pdf = dot ( Nprime , normalize( inter.point - lightSphere.center) ) / ( M_PI*R*R );
-                    Lo = inter.sphere.albedo*(lightSphere.lightIntensity / ( 4* M_PI*M_PI*M_PI*R*R )); 
-                    Lo = Lo* (visibility * std::max (dot(inter.unitNormal , omega_i ) , 0. ));
-                    Lo = Lo*(std::max( dot ( Nprime , omega_i*(-1) ) , 0.) / ( (xprime - inter.point).norm()*(xprime - inter.point).norm()* pdf )) ;
+                    Vector rho = obj->albedo;
+                    Vector p = inter.point;
+                    Vector n = inter.unitNormal;
+                    double d = (xprime - inter.point).norm();
+                    double c = (lightSphere.lightIntensity/ ( 4 * M_PI*d*M_PI*d ) )* max(dot( n,normalize(s-p) ),0.);
+                    // double pdf = dot ( Nprime , normalize( inter.point - lightSphere.center) ) / ( M_PI*R*R );
+                    // Lo = obj->albedo*(lightSphere.lightIntensity / ( 4* M_PI*M_PI*M_PI*R*R )); 
+                    // Lo = Lo* (visibility * std::max (dot(inter.unitNormal , omega_i ) , 0. ));
+                    // Lo = Lo*(std::max( dot ( Nprime , omega_i*(-1) ) , 0.) / ( (xprime - inter.point).norm()*(xprime - inter.point).norm()* pdf )) ;
+                    Lo = rho*(c*visibility);
                     Ray randomRay(inter.point, normalize(randomCos(inter.unitNormal)), ray.time );
-                    Lo+=inter.sphere.albedo*getColor(lightSphere,s,randomRay,rayDepth-1,scene,curRefractionIndex, true);
+                    Lo+=obj->albedo*getColor(lightSphere,s,randomRay,rayDepth-1,scene,curRefractionIndex, true);
                     return Lo;
                 }
             }
