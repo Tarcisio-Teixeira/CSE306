@@ -49,7 +49,7 @@ int main() {
     for (int i = 0; i < int(Cat->vertices.size()); i++) {
         Cat->vertices[i] = Cat->vertices[i]*0.6 + Vector(0, -10, 0);
     }
-
+    Cat->computeBoundingBox();
 
     Vector lightOrigin(-10.,20.,40.);
     Sphere* lightSphere = new Sphere(lightOrigin,Vector(1.,1.,1.),5.,false,-1., true, I,Vector(0.,0.,0.));

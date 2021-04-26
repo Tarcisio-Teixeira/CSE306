@@ -1,5 +1,6 @@
 #pragma once
 #include <vector>
+#include <iostream>
 #include "vector.cpp"
 #include "sphere.cpp"
 #include "scene.cpp"
@@ -14,6 +15,68 @@ struct Intersection {
 };
 Intersection intersect_mesh(Ray ray, TriangleMesh* mesh){
     Intersection inter;
+    double xmin = mesh->Bmin[0];
+    double ymin = mesh->Bmin[1];
+    double zmin = mesh->Bmin[2];
+    double xmax = mesh->Bmax[0];
+    double ymax = mesh->Bmax[1];
+    double zmax = mesh->Bmax[2];
+    double ux = ray.direction[0];
+    double uy = ray.direction[1];
+    double uz = ray.direction[2];
+    double x0 = ray.origin[0];
+    double y0 = ray.origin[1];
+    double z0 = ray.origin[2];
+    double t0x;
+    // std::cout << ux << " " << uy << " " << uz << std::endl;
+    if(abs(ux)>0.){ 
+        
+        t0x = abs(xmin-x0)/abs(ux);
+    } 
+    else{ 
+        t0x= 0.;
+    }
+    double t0y;
+    if(abs(uy)>0.){ 
+        t0y= abs(ymin-y0)/abs(uy);
+    } 
+    else{ 
+        t0y= 0.;
+    }
+    double t0z;
+    if(abs(uz)>0.){ 
+        t0z= abs(zmin-z0)/abs(uz);
+    } 
+    else{
+        t0z = 0.;
+    }
+    double t1x;
+    if(abs(ux)>0.){ 
+        t1x= abs(xmax-x0)/abs(ux);
+    } else{ 
+        t1x= INFINITY;
+    }
+    double t1y;
+    if(abs(uy)>0.){ 
+        t1y= abs(ymax-y0)/abs(uy);
+    } 
+    else{ 
+        t1y= INFINITY;
+    }
+    double t1z;
+    if(abs(uz)>0.){ 
+        t1z= abs(zmax-z0)/abs(uz);
+    } 
+    else{ 
+        t1z= INFINITY;
+    }
+    double mint1 = std::min(t1x,std::min(t1y,t1z));
+    double maxt0 = std::max(t0x,std::max(t0y,t0z));
+    
+    if (mint1 <= maxt0){
+        inter.intersects=0;
+        return inter;
+    }
     std::vector<TriangleIndices> indices = mesh->indices;
 	std::vector<Vector> vertices = mesh->vertices;
 	std::vector<Vector> normals=mesh->normals;
