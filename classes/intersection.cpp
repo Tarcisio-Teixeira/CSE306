@@ -28,47 +28,37 @@ Intersection intersect_mesh(Ray ray, TriangleMesh* mesh){
     double y0 = ray.origin[1];
     double z0 = ray.origin[2];
     double t0x;
+    double t0y;
+    double t0z;
+    double t1x;
+    double t1y;
+    double t1z;
     // std::cout << ux << " " << uy << " " << uz << std::endl;
     if(abs(ux)>0.){ 
-        
+        t1x= abs(xmax-x0)/abs(ux);
         t0x = abs(xmin-x0)/abs(ux);
     } 
     else{ 
+        t1x= INFINITY;
         t0x= 0.;
     }
-    double t0y;
+    
     if(abs(uy)>0.){ 
+        t1y= abs(ymax-y0)/abs(uy);
         t0y= abs(ymin-y0)/abs(uy);
     } 
     else{ 
+        t1y= INFINITY;
         t0y= 0.;
     }
-    double t0z;
+    
     if(abs(uz)>0.){ 
+        t1z= abs(zmax-z0)/abs(uz);
         t0z= abs(zmin-z0)/abs(uz);
     } 
     else{
-        t0z = 0.;
-    }
-    double t1x;
-    if(abs(ux)>0.){ 
-        t1x= abs(xmax-x0)/abs(ux);
-    } else{ 
-        t1x= INFINITY;
-    }
-    double t1y;
-    if(abs(uy)>0.){ 
-        t1y= abs(ymax-y0)/abs(uy);
-    } 
-    else{ 
-        t1y= INFINITY;
-    }
-    double t1z;
-    if(abs(uz)>0.){ 
-        t1z= abs(zmax-z0)/abs(uz);
-    } 
-    else{ 
         t1z= INFINITY;
+        t0z = 0.;
     }
     double mint1 = std::min(t1x,std::min(t1y,t1z));
     double maxt0 = std::max(t0x,std::max(t0y,t0z));
