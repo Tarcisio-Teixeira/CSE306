@@ -1,12 +1,5 @@
-#include <string.h>
-#include <iostream>
-#include <stdio.h>
-#include <algorithm>
-#include <vector>
-#include "vector.cpp"
+#pragma once
 #include "geometry.cpp"
-
-
 class TriangleIndices {
 public:
 	TriangleIndices(int vtxi = -1, int vtxj = -1, int vtxk = -1, int ni = -1, int nj = -1, int nk = -1, int uvi = -1, int uvj = -1, int uvk = -1, int group = -1, bool added = false) : vtxi(vtxi), vtxj(vtxj), vtxk(vtxk), uvi(uvi), uvj(uvj), uvk(uvk), ni(ni), nj(nj), nk(nk), group(group) {
@@ -18,7 +11,7 @@ public:
 };
 
 
-class TriangleMesh: public Geometry {
+class TriangleMesh {
 public:
     ~TriangleMesh() {}
     TriangleMesh() {}
@@ -200,27 +193,12 @@ public:
 		fclose(f);
 		// computeBoundingBox();
 	}
-	void computeBoundingBox(){
-		Vector min = vertices[0];
-        Vector max = vertices[0];
-        for(long long i =0; i<vertices.size();++i){
-            min[0] = std::min(vertices[i][0],min[0]);
-            min[1] = std::min(vertices[i][1],min[1]);
-            min[2] = std::min(vertices[i][2],min[2]);
-            max[0] = std::max(vertices[i][0],max[0]);
-            max[1] = std::max(vertices[i][1],max[1]);
-            max[2] = std::max(vertices[i][2],max[2]);
-
-        }
-        Bmax = max;
-        Bmin = min;
-	}
+	
 	std::vector<TriangleIndices> indices;
 	std::vector<Vector> vertices;
 	std::vector<Vector> normals;
 	std::vector<Vector> uvs;
 	std::vector<Vector> vertexcolors;
-	Vector Bmin;
-	Vector Bmax;
-	
+	Vector albedo;
+	int type;
 };
