@@ -11,7 +11,7 @@ public:
 };
 
 
-class TriangleMesh {
+class TriangleMesh : public Geometry {
 public:
     ~TriangleMesh() {}
     TriangleMesh() {}
@@ -20,6 +20,65 @@ public:
         this->albedo = albedo;
         this->type = 1;
     }
+	void setId(int id){
+        this->id = id;
+
+    }
+	Vector compute_barycenter(int indicator){
+		TriangleIndices triangle = indices[indicator];
+		Vector A = vertices[triangle.vtxi];
+		Vector B = vertices[triangle.vtxj];
+		Vector C = vertices[triangle.vtxk];
+		Vector D = (A + B + C)/3.;
+		return D;
+	}
+	Intersection intersect (const Ray& ray){
+		return intersect(ray, 0, indices.size());
+	}
+	Intersection intersect(const Ray& ray, const int& startIndex, const int& endIndex){
+		Intersection inter;
+		TriangleIndices triangle;
+        Vector A, B, C, e1, e2, N, u, uv;
+        double beta, gamma, alpha, t,x,y, min = INFINITY;
+		for (int i = startIndex; i < endIndex; i++){
+			triangle = indices[i];
+			A = vertices[triangle.vtxi];
+			B = vertices[triangle.vtxj];
+			C = vertices[triangle.vtxk];
+			e1 = B - A;
+			e2 = C - A;
+			N = cros(e1,e2);
+			u = normalize(ray.direction);
+			if (dot(u, N)!=0.){
+				beta = dot(e2, cros(A - ray.origin, u))/dot(u, N);
+				gamma = -dot(e1, cros(A - ray.origin, u))/dot(u, N);
+				alpha = 1.- beta - gamma;
+				t = dot(A-ray.origin, N)/dot(u, N);
+				if ((t >= 0) && (t < min) ){
+					bool b = (0 <= alpha) && (alpha <= 1) && (0 <= beta) && (beta <= 1) && (0 <= gamma) && (gamma <= 1);
+					if (b) {
+						min = t;
+						inter.intersects = 1;
+						inter.dist = t;
+						inter.point = ray.origin + u*t;
+						inter.unitNormal = normalize(N);
+						// inter.unitNormal = normalize(normals[triangle.ni]*alpha+ normals[triangle.nj]*beta+ normals[triangle.nk]*gamma);
+						inter.objectId =id;
+						inter.albedo=albedo;
+						// uv=  mesh->uvs[triangle.uvi]*alpha+ mesh->uvs[triangle.uvj] * beta+  mesh->uvs[triangle.uvk]*gamma;
+						// x = int(std::max( std::min(uv[0]*512.,512.) ,0.));
+						// y = int(1024 - 1 - std::max(std::min(uv[1]*1024.,1024.),0.));
+						// inter.albedo[0] = pow(texture[int(y*512*3 + x*3) + 0]/255.,2.2);
+						// inter.albedo[1] = pow(texture[int(y*512*3 + x*3 )+ 1]/255.,2.2);
+						// inter.albedo[2] = pow(texture[int(y*512*3 + x*3) + 2]/255.,2.2);
+					}
+				}
+			}
+		}
+		return inter;
+	}
+	
+
 	void readOBJ(const char* obj) {
 
 		char matfile[255];
@@ -201,4 +260,5 @@ public:
 	std::vector<Vector> vertexcolors;
 	Vector albedo;
 	int type;
+	int id;
 };

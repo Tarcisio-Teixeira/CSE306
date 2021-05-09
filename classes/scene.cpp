@@ -1,18 +1,25 @@
 #pragma once
 
-#include "geometry.cpp"
+// #include "geometry.cpp"
+#include "sphere.cpp"
+#include <vector>
+#include <random>
+
+using namespace std;
 class Scene{
     public:
         std::vector<Geometry*> scene;
         double refractionIndex;
+
         Scene(){}
         Scene( double refractionIndex){
             this->scene = std::vector<Geometry*>{};
             this->refractionIndex = refractionIndex;
         }
         void addGeometry(Geometry* obj){
-            obj->id = scene.size();
+            obj->setId(scene.size());
             scene.push_back(obj);
+            
         }
         Intersection intersect(const Ray& ray){
             Intersection res;
@@ -37,4 +44,5 @@ class Scene{
                 return res;
             }
         };
+        
 };

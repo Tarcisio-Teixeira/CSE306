@@ -22,5 +22,8 @@ class Geometry{
         double lightIntensity =0;
         Vector speed =Vector(0.,0.,0.);
         virtual Intersection intersect(const Ray& ray)=0;
+        virtual void setId(int id)=0;
+        
+   
 
 };

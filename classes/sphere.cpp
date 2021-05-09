@@ -18,6 +18,10 @@ class Sphere : public Geometry{
 
         }
         Sphere(){}
+        void setId(int id){
+            this->id = id;
+        
+        }
         Intersection intersect(const Ray& ray){
             Intersection inter;
             double t;

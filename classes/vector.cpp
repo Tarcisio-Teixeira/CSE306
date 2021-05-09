@@ -37,6 +37,12 @@ Vector operator-(const Vector& a, const Vector &b){
 Vector operator*(const Vector& a, const double r){
     return Vector(a[0]*r,a[1]*r,a[2]*r);
 }
+Vector operator*( const double r, const Vector& a){
+    return Vector(a[0]*r,a[1]*r,a[2]*r);
+}
+Vector operator/(  const Vector& a,const double r){
+    return Vector(a[0]/r,a[1]/r,a[2]/r);
+}
 Vector operator*(const Vector& a, const Vector& b){
     return Vector(a[0]*b[0],a[1]*b[1],a[2]*b[2]);
 }

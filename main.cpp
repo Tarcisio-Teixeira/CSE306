@@ -54,6 +54,7 @@ int main() {
     int H_=512,W_=512;
     unsigned char* catTexture= stbi_load(catTextureFileName,&H_,&W_,&comp,3);
     BVH* bvh = new BVH(Cat,0,Cat->indices.size(),catTexture);
+    BoundingBox* bbox= new BoundingBox(Cat,0,Cat->indices.size());
     Vector lightOrigin(-10.,20.,40.);
     Sphere* lightSphere = new Sphere(lightOrigin,Vector(1.,1.,1.),5,false,-1., true, I,Vector(0.,0.,0.));
     Vector cameraPosition(0,0,55);
@@ -69,13 +70,16 @@ int main() {
     // scene.addGeometry(rightTestSphere);
     // scene.addGeometry(leftTestSphere);
     // scene.addGeometry(centerTestSphere);
+
     scene.addGeometry(bvh);
+    // scene.addGeometry(Cat);
+    // scene.addGeometry(bbox);
+    
     GetColor getColor(scene);
     auto start = std::chrono::high_resolution_clock::now();
     std::vector<unsigned char> image(W*H * 3, 0);
     #pragma omp parallel for schedule(dynamic,1)
     for (int i = 0; i < H; i++) {
-        // GetColor g;
         for (int j = 0; j < W; j++) {
             ////////////////////////////////////// Spherical Light + Indirect Light /////////////////
             int new_i = H - 1 - i;
@@ -88,6 +92,8 @@ int main() {
                 double time =  (((double) rand())/(RAND_MAX)); 
                 Ray cameraRay = getColor.dephtOfField(randDir, aperture, distance, cameraPosition,time);
                 pixelColor+= getColor.getColor(*lightSphere,lightOrigin,cameraRay,maxDepth,airRefractionIndex,false);
+                
+
             }
             Vector L = pixelColor*(1./32.);
             image[(i*W + j) * 3 + 0] = min(int(pow(L[0],1./2.2)),255);
@@ -99,7 +105,7 @@ int main() {
             // Vector pix(cameraPosition[0]+j+0.5-W/2.,cameraPosition[1]+new_i+0.5-H/2.,cameraPosition[2]-f);
             // Ray cameraRay(cameraPosition,normalize(pix-cameraPosition),0.);
             
-            // Vector L = getColor.getColorMultipleRays(1000,*lightSphere,lightOrigin,cameraRay,maxDepth,airRefractionIndex);
+            // Vector L = scene.getColorMultipleRays(1000,*lightSphere,lightOrigin,cameraRay,maxDepth,airRefractionIndex);
             // image[(i*W + j) * 3 + 0] = min(int(pow(L[0],1./2.2)),255);
             // image[(i*W + j) * 3 + 1] = min(int(pow(L[1],1./2.2)),255);
             // image[(i*W + j) * 3 + 2] = min(int(pow(L[2],1./2.2)),255);
