@@ -5,6 +5,7 @@
 #include "svjsaver.cpp"
 #include <mutex>
 #include <algorithm>
+#include <random>
 
 namespace PowerDiagram {
         Vector intersectWithBisector(Vector vertexA, Vector vertexB, Vector curPoint, Vector cmpPoint){
@@ -77,7 +78,7 @@ namespace PowerDiagram {
                 double optimalDistance = computeOptimalDistance(p);
                 for (int j = 0; j < points.size(); ++j ){
                     Vector q = points[j];
-                    if ((modifiedUpDimension(q)-modifiedUpDimension(p)).normSquared() > 2*optimalDistance){
+                    if ((modifiedUpDimension(q)-modifiedUpDimension(p)).normSquared() > 4*optimalDistance){
                         break;
                     }
                     if (p[0]==q[0] && p[1]==q[1] && p[2]==q[2]) continue; 
@@ -121,4 +122,38 @@ namespace PowerDiagram {
             // save_voronoi_svg(result, "inter.svg",tmpPolygon);
             return tmpPolygon;
         };
+        void createPowerDiagram(int numOfVertices, std::string filename){
+            std::default_random_engine generator;
+            std::normal_distribution<double> distribution(0.,1.0);
+            double weights[numOfVertices] = {};
+            int counter = 0;
+            double x,y,z,w,sq;
+        
+            while (counter < numOfVertices){
+                weights[counter] = std::abs(distribution(generator));
+                
+                if (weights[counter] < 1.){
+                    counter++;
+                }
+            }
+            
+            Polygon polygon;
+            double maxEl = *std::max_element(weights, weights+numOfVertices);
+            
+            double tot=0.;
+            for (int i=0; i<numOfVertices; ++i ){
+                x = ((double) rand() )/RAND_MAX;
+                y = ((double) rand() )/RAND_MAX;
+                z =0;
+                w = exp(  -((x-0.5)*(x-0.5) +  (y-0.5)*(y-0.5) )  /(0.02) )/20;
+                sq = sqrt(2. - w);
+                Vector v = Vector(x,y,z,w,sq);
+                polygon.vertices.push_back(v);
+            }
+
+            std::vector<Polygon> polygons = voronoiParallelLinearEnumeration(polygon);
+            save_voronoi_svg(polygons, filename ,polygon);
+
+
+        }
 };

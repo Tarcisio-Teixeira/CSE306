@@ -72,13 +72,13 @@ namespace VoronoiDiagram {
                 Polygon tmpPolygon = boundingBox;
                 // k-nearest
                 std::vector<Vector> points = polygon.vertices;
-                std::sort(points.begin(), points.end(), [p](const Vector& v1, const Vector& v2) {return (v1-p).norm() < (v2-p).norm();} );
+                // std::sort(points.begin(), points.end(), [p](const Vector& v1, const Vector& v2) {return (v1-p).norm() < (v2-p).norm();} );
                 double optimalDistance = computeOptimalDistance(p);
                 for (int j = 0; j < points.size(); ++j ){
                     Vector q = points[j];
-                    if ((q-p).norm() > 2*optimalDistance){
-                        break;
-                    }
+                    // if ((q-p).norm() > 2*optimalDistance){
+                    //     break;
+                    // }
                     if (p[0]==q[0] && p[1]==q[1] && p[2]==q[2]) continue; 
                     else{
                         tmpPolygon=sutherlandHodgmanAux(p,q,tmpPolygon,std::ref(optimalDistance));
@@ -98,7 +98,7 @@ namespace VoronoiDiagram {
             return polygon;
         };
 
-        std::vector<Polygon> centroidalVoronoiTesselation(Polygon polygon, int iterations = 100){
+        std::vector<Polygon> centroidalVoronoiTesselation(Polygon polygon, std::string filename, int iterations = 100){
             std::vector<Polygon> result = voronoiParallelLinearEnumeration(polygon);
             Polygon tmpPolygon=computeCenterOfVoronoiDiagram(result);
             for (int i=1; i < iterations; ++i){
@@ -106,7 +106,7 @@ namespace VoronoiDiagram {
                 result = voronoiParallelLinearEnumeration(tmpPolygon);
                 tmpPolygon = computeCenterOfVoronoiDiagram(result);
             }
-            save_voronoi_svg(result, "inter.svg",tmpPolygon);
+            save_voronoi_svg(result, filename ,tmpPolygon);
             return result;
         };
         Polygon centersOfVoronoiTesselation(Polygon polygon, int iterations = 50){
@@ -121,7 +121,24 @@ namespace VoronoiDiagram {
             // save_voronoi_svg(result, "inter.svg",tmpPolygon);
             return tmpPolygon;
         };
+        void createVoronoiDiagram (int numOfVertices, bool isCentered, std::string filename){
+            double x,y,z,w,sq;
+            Polygon polygon;
+            for (int i=0; i<numOfVertices; ++i ){
+                x = ((double) rand() )/RAND_MAX;
+                y = ((double) rand() )/RAND_MAX;
+                z =0;
+                Vector v = Vector(x,y,z,0.,sq);
+                polygon.vertices.push_back(v);
+            }
+            if (isCentered) centroidalVoronoiTesselation(polygon, filename);
+            else {
+                std::vector<Polygon> polygons = VoronoiDiagram::voronoiParallelLinearEnumeration(polygon);
+                save_voronoi_svg(polygons, filename ,polygon);
+            }
 
+
+        }
 
 
 };

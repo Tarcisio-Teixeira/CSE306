@@ -84,7 +84,7 @@ void save_voronoi_svg(const std::vector<Polygon> &polygons, std::string filename
         
     }
     for (int j = 0; j < polygon.vertices.size(); j++) {
-        if (j>=250)
+        // if (j>=250)
             fprintf(f, "<circle cx=\"%3.3f\" cy=\"%3.3f\" r=\"1\" stroke=\"black\" stroke-width=\"1\" fill = \"black\" />", (polygon.vertices[j][0]* 1000), (1000 - polygon.vertices[j][1] * 1000));
         //     // fprintf(f, "<circle cx=\"%3.3f\" cy=\"%3.3f\" r=\"1\" stroke=\"black\" stroke-width=\"1\" fill = \"black\" />", (polygon.vertices[j][0]), (1000 - polygon.vertices[j][1]));
 
