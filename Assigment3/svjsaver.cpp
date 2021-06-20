@@ -79,7 +79,8 @@ void save_voronoi_svg(const std::vector<Polygon> &polygons, std::string filename
                 fprintf(f, "%3.3f, %3.3f ", (polygons[i].vertices[j][0] * 1000), (1000 - polygons[i].vertices[j][1] * 1000));
                 // fprintf(f, "%3.3f, %3.3f ", (polygons[i].vertices[j][0]), (1000 - polygons[i].vertices[j][1]));
         }
-        fprintf(f, "\"\nfill = \"%s\" stroke = \"black\"/>\n", colors[i%14].c_str());
+        // fprintf(f, "\"\nfill = \"%s\" stroke = \"black\"/>\n", colors[i%14].c_str());
+        fprintf(f, "\"\nfill = \"%s\" stroke = \"black\"/>\n", "none");
         fprintf(f, "</g>\n");
         
     }

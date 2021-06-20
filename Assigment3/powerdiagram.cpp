@@ -30,15 +30,15 @@ namespace PowerDiagram {
                 if (isInsideBisector(curVertex,curPoint, cmpPoint)){
                     if (!isInsideBisector(prevVertex,curPoint, cmpPoint)){
                         outPolygon.vertices.push_back(intersection);
-                        optDistance = std::max(optDistance,(modifiedUpDimension(curPoint)-modifiedUpDimension(intersection)).normSquared() );
+                        optDistance = std::max(optDistance,distanceUpDimension(curPoint,intersection) );
 
                     }
                     outPolygon.vertices.push_back(curVertex);
-                    optDistance = std::max(optDistance,(modifiedUpDimension(curPoint)-modifiedUpDimension(curVertex)).normSquared() );
+                    optDistance = std::max(optDistance,distanceUpDimension(curPoint,curVertex) );
                 }
                 else if (isInsideBisector(prevVertex,curPoint, cmpPoint)){
                     outPolygon.vertices.push_back(intersection);
-                    optDistance = std::max(optDistance,(modifiedUpDimension(curPoint)-modifiedUpDimension(intersection)).normSquared() );
+                    optDistance = std::max(optDistance,distanceUpDimension(curPoint,intersection) );
                 }
             }
             return outPolygon;
@@ -55,12 +55,12 @@ namespace PowerDiagram {
         double computeOptimalDistance(Vector p){
             return std::max(
                             std::max(
-                                (modifiedUpDimension(p)-Vector(0.,0.,0.)).norm(),
-                                (modifiedUpDimension(p)-Vector(0.,1.,0.)).norm()
+                                distanceUpDimension(p,Vector(0.,0.,0.)),
+                                distanceUpDimension(p,Vector(0.,1.,0.))
                             ),
                             std::max(
-                                (modifiedUpDimension(p)-Vector(1.,0.,0.)).norm(),
-                                (modifiedUpDimension(p)-Vector(1.,1.,0.)).norm()
+                                distanceUpDimension(p, Vector(1.,0.,0.)),
+                                distanceUpDimension(p, Vector(1.,1.,0.))
                             )
                     );
         };
@@ -74,13 +74,13 @@ namespace PowerDiagram {
                 Polygon tmpPolygon = boundingBox;
                 // k-nearest
                 std::vector<Vector> points = polygon.vertices;
-                std::sort(points.begin(), points.end(), [p](const Vector& v1, const Vector& v2) {return (modifiedUpDimension(v1)-modifiedUpDimension(p)).norm() < (modifiedUpDimension(v2)-modifiedUpDimension(p)).norm();} );
+                // std::sort(points.begin(), points.end(), [p](const Vector& v1, const Vector& v2) {return (distanceUpDimension(v1,p) < distanceUpDimension(v2,p));} );
                 double optimalDistance = computeOptimalDistance(p);
                 for (int j = 0; j < points.size(); ++j ){
                     Vector q = points[j];
-                    if ((modifiedUpDimension(q)-modifiedUpDimension(p)).normSquared() > 4*optimalDistance){
-                        break;
-                    }
+                    // if (distanceUpDimension(p,q) > 4*optimalDistance){
+                    //     break;
+                    // }
                     if (p[0]==q[0] && p[1]==q[1] && p[2]==q[2]) continue; 
                     else{
                         tmpPolygon=sutherlandHodgmanAux(p,q,tmpPolygon,std::ref(optimalDistance));
@@ -146,7 +146,7 @@ namespace PowerDiagram {
                 y = ((double) rand() )/RAND_MAX;
                 z =0;
                 w = exp(  -((x-0.5)*(x-0.5) +  (y-0.5)*(y-0.5) )  /(0.02) )/20;
-                sq = sqrt(2. - w);
+                sq = sqrt(1. - w);
                 Vector v = Vector(x,y,z,w,sq);
                 polygon.vertices.push_back(v);
             }

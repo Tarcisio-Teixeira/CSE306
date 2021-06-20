@@ -104,7 +104,7 @@ namespace OptimalTransportSimulation {
             Start the L-BFGS optimization; this will invoke the callback functions
             evaluate() and progress() when necessary.
         */
-        param.max_iterations = 500;
+        param.max_iterations = 3000;
         ret = lbfgs(N, x, &fx, evaluate, progress, NULL, &param);
         std::vector<Polygon> polygons = PowerDiagram::voronoiParallelLinearEnumeration(OptimalTransportSimulation::polygon);
         save_voronoi_svg(polygons, "voronois/optimaltransport.svg", OptimalTransportSimulation::polygon);

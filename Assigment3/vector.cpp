@@ -38,6 +38,9 @@ class Vector {
         
 
 };
+double distanceUpDimension(Vector v, Vector w){
+    return (v[0]-w[0])*(v[0]-w[0]) + (v[1]-w[1])*(v[1]-w[1]) + (v.sqrtMMinusW-w.sqrtMMinusW)*(v.sqrtMMinusW-w.sqrtMMinusW);
+}
 Vector modifiedUpDimension(Vector v){
     return Vector(v[0],v[1],v.sqrtMMinusW);
 }

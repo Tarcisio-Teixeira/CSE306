@@ -16,7 +16,7 @@ namespace FluidSimulation {
     static double eps = 0.004;
     static double dt = 0.002;
     static Vector g( 0., -9.8, 0.);
-    static double mass = 200.;
+    static double mass = 800.;
     std::vector<Vector> velocities;
     static void setCellVolumes(double waterVol, double airVol){
         waterCellVolume = waterVol;
